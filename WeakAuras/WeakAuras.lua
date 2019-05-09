@@ -1,6 +1,7 @@
 local internalVersion = 16;
 -- dummy change
 -- duumy 2
+-- dummy 3
 -- WoW APIs
 local GetTalentInfo, IsAddOnLoaded, InCombatLockdown = GetTalentInfo, IsAddOnLoaded, InCombatLockdown
 local LoadAddOn, UnitName, GetRealmName, UnitRace, UnitFactionGroup, IsInRaid
