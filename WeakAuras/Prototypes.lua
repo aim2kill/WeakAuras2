@@ -82,6 +82,7 @@ WeakAuras.encounter_table = {
 }
 
 local function get_encounters_list()
+  if WeakAuras.IsClassic then return "" end
   local encounter_list = ""
 
   EJ_SelectTier(EJ_GetNumTiers())
@@ -112,6 +113,7 @@ local function get_encounters_list()
 end
 
 local function get_zoneId_list()
+  if WeakAuras.IsClassic then return "" end
   local zoneId_list = ""
   EJ_SelectTier(EJ_GetNumTiers())
   for _,inRaid in ipairs({false, true}) do
@@ -167,6 +169,7 @@ local function get_zoneId_list()
 end
 
 local function get_zoneGroupId_list()
+  if WeakAuras.IsClassic then return "" end
   local zoneGroupId_list = ""
   EJ_SelectTier(EJ_GetNumTiers())
   for _,inRaid in ipairs({false, true}) do
@@ -596,9 +599,11 @@ WeakAuras.anim_presets = {
 };
 
 WeakAuras.class_ids = {}
-for classID = 1, GetNumClasses() do
+for classID = 1, 20 do -- GetNumClasses not supported by wow classic
   local classInfo = C_CreatureInfo.GetClassInfo(classID)
-  WeakAuras.class_ids[classInfo.classFile] = classInfo.classID
+  if classInfo then
+    WeakAuras.class_ids[classInfo.classFile] = classInfo.classID
+  end
 end
 
 function WeakAuras.CheckTalentByIndex(index)
@@ -827,7 +832,8 @@ WeakAuras.load_prototype = {
       type = "tristate",
       init = "arg",
       width = WeakAuras.doubleWidth,
-      optional = true
+      optional = true,
+      hidden = WeakAuras.IsClassic
     },
     {
       name = "never",
@@ -842,7 +848,8 @@ WeakAuras.load_prototype = {
       type = "tristate",
       init = "arg",
       width = WeakAuras.normalWidth,
-      optional = true
+      optional = true,
+      hidden = WeakAuras.IsClassic
     },
     {
       name = "vehicle",
@@ -850,7 +857,8 @@ WeakAuras.load_prototype = {
       type = "tristate",
       init = "arg",
       width = WeakAuras.normalWidth,
-      optional = true
+      optional = true,
+      hidden = WeakAuras.IsClassic
     },
     {
       name = "vehicleUi",
@@ -858,7 +866,8 @@ WeakAuras.load_prototype = {
       type = "tristate",
       init = "arg",
       width = WeakAuras.normalWidth,
-      optional = true
+      optional = true,
+      hidden = WeakAuras.IsClassic
     },
     {
       name = "ingroup",
@@ -881,14 +890,14 @@ WeakAuras.load_prototype = {
       init = "arg"
     },
     {
-      name = "class",
+      name = "class", -- WOWCLASSIC TO FIX: empty
       display = L["Player Class"],
       type = "multiselect",
       values = "class_types",
       init = "arg"
     },
     {
-      name = "spec",
+      name = "spec", -- WOWCLASSIC TO FIX
       display = L["Talent Specialization"],
       type = "multiselect",
       values = function(trigger)
@@ -935,16 +944,18 @@ WeakAuras.load_prototype = {
         end
       end,
       init = "arg",
+      hidden = WeakAuras.IsClassic
     },
     {
-      name = "talent",
+      name = "talent", -- WOWCLASSIC TO FIX
       display = L["Talent selected"],
       type = "multiselect",
       values = valuesForTalentFunction,
       test = "WeakAuras.CheckTalentByIndex(%d)",
+      hidden = WeakAuras.IsClassic
     },
     {
-      name = "talent2",
+      name = "talent2", -- WOWCLASSIC TO FIX
       display = L["And Talent selected"],
       type = "multiselect",
       values = valuesForTalentFunction,
@@ -952,9 +963,10 @@ WeakAuras.load_prototype = {
       enable = function(trigger)
         return trigger.use_talent ~= nil or trigger.use_talent2 ~= nil;
       end,
+      hidden = WeakAuras.IsClassic
     },
     {
-      name = "talent3",
+      name = "talent3", -- WOWCLASSIC TO FIX
       display = L["And Talent selected"],
       type = "multiselect",
       values = valuesForTalentFunction,
@@ -962,6 +974,7 @@ WeakAuras.load_prototype = {
       enable = function(trigger)
         return (trigger.use_talent ~= nil and trigger.use_talent2 ~= nil) or trigger.use_talent3 ~= nil;
       end,
+      hidden = WeakAuras.IsClassic
     },
     {
       name = "pvptalent",
@@ -1022,6 +1035,7 @@ WeakAuras.load_prototype = {
         end
       end,
       test = "WeakAuras.CheckPvpTalentByIndex(%d)",
+      hidden = WeakAuras.IsClassic
     },
     {
       name = "spellknown",
@@ -1061,7 +1075,7 @@ WeakAuras.load_prototype = {
       type = "string",
       init = "arg",
       desc = get_zoneId_list,
-      test = "WeakAuras.CheckNumericIds(%q, zoneId)",
+      test = "WeakAuras.CheckNumericIds(%q, zoneId)", -- WOWCLASSIC TO FIX: hidden it make error
     },
     {
       name = "zonegroupId",
@@ -1069,7 +1083,7 @@ WeakAuras.load_prototype = {
       type = "string",
       init = "arg",
       desc = get_zoneGroupId_list,
-      test = "WeakAuras.CheckNumericIds(%q, zonegroupId)",
+      test = "WeakAuras.CheckNumericIds(%q, zonegroupId)", -- WOWCLASSIC TO FIX: hidden it make error
     },
     {
       name = "encounterid",
@@ -1077,7 +1091,7 @@ WeakAuras.load_prototype = {
       type = "string",
       init = "arg",
       desc = get_encounters_list,
-      test = "WeakAuras.CheckNumericIds(%q, encounterid)",
+      test = "WeakAuras.CheckNumericIds(%q, encounterid)", -- WOWCLASSIC TO FIX: hidden it make error
     },
     {
       name = "size",
@@ -1093,6 +1107,7 @@ WeakAuras.load_prototype = {
       type = "multiselect",
       values = "difficulty_types",
       init = "arg",
+      hidden = WeakAuras.IsClassic
     },
     {
       name = "role",
@@ -1108,6 +1123,7 @@ WeakAuras.load_prototype = {
       values = "mythic_plus_affixes",
       init = "arg",
       test = "WeakAuras.CheckMPlusAffixIds(%d, affixes)",
+      hidden = WeakAuras.IsClassic
     },
   }
 };
@@ -4748,7 +4764,7 @@ WeakAuras.event_prototypes = {
     },
     automaticrequired = true
   },
-  ["Cast"] = {
+  ["Cast"] = { -- WOWCLASSIC TO FIX UnitCastingInfo not working
     type = "status",
     events = function(trigger)
       local result = {}
@@ -5285,7 +5301,7 @@ WeakAuras.event_prototypes = {
     end,
     unit_events = function(trigger)
       local result = {}
-      if trigger.use_vehicle ~= nil then
+      if not WeakAuras.IsClassic and trigger.use_vehicle ~= nil then
         tinsert(result, "UNIT_ENTERED_VEHICLE")
         tinsert(result, "UNIT_EXITED_VEHICLE")
       end
@@ -5338,7 +5354,8 @@ WeakAuras.event_prototypes = {
         name = "pvpflagged",
         display = L["PvP Flagged"],
         type = "tristate",
-        init = "UnitIsPVP('player')"
+        init = "UnitIsPVP('player')",
+        hidden = WeakAuras.IsClassic
       },
       {
         name = "alive",
@@ -5350,7 +5367,8 @@ WeakAuras.event_prototypes = {
         name = "vehicle",
         display = L["In Vehicle"],
         type = "tristate",
-        init = "UnitInVehicle('player')"
+        init = "not WeakAuras.IsClassic and UnitInVehicle('player')",
+        hidden = WeakAuras.IsClassic
       },
       {
         name = "resting",
