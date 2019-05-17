@@ -890,7 +890,7 @@ WeakAuras.load_prototype = {
       init = "arg"
     },
     {
-      name = "class", -- WOWCLASSIC TO FIX: empty
+      name = "class",
       display = L["Player Class"],
       type = "multiselect",
       values = "class_types",
@@ -5647,6 +5647,12 @@ WeakAuras.event_prototypes = {
   },
 
 };
+
+if WeakAuras.IsClassic then
+  WeakAuras.event_prototypes["Threat Situation"] = nil
+  WeakAuras.event_prototypes["Death Knight Rune"] = nil
+  WeakAuras.event_prototypes["Talent Selected"] = nil -- TO FIX
+end
 
 WeakAuras.dynamic_texts = {
   ["p"] = {
