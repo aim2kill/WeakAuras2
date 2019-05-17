@@ -1502,7 +1502,7 @@ WeakAuras.event_prototypes = {
           if (event == "UNIT_SPELLCAST_START" and unit == "player") then
             local spellID;
             if WeakAuras.IsClassic then
-              spellID = select(9, CastingInfo();
+              spellID = select(9, CastingInfo());
             else
               spellID = select(9, UnitCastingInfo("player"));
             end
@@ -1519,7 +1519,7 @@ WeakAuras.event_prototypes = {
           elseif (event == "UNIT_DISPLAYPOWER") then
             local spellID;
             if WeakAuras.IsClassic then
-              spellID = select(9, CastingInfo();
+              spellID = select(9, CastingInfo());
             else
               spellID = select(9, UnitCastingInfo("player"));
             end
