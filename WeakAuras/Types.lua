@@ -1341,7 +1341,7 @@ WeakAuras.chat_message_types = {
   CHAT_MSG_RAID = L["Raid"],
   CHAT_MSG_RAID_BOSS_EMOTE = L["Boss Emote"],
   CHAT_MSG_RAID_BOSS_WHISPER = L["Boss Whisper"],
-  CHAT_MSG_RAID_WARNING = L["Raid Warning"],
+  CHAT_MSG_RAID_WARNING = L["Raid Warning"], -- WOW CLASSIC: check this
   CHAT_MSG_SAY = L["Say"],
   CHAT_MSG_WHISPER = L["Whisper"],
   CHAT_MSG_YELL = L["Yell"],
@@ -1359,7 +1359,7 @@ WeakAuras.send_chat_message_types = {
   OFFICER = L["Officer"],
   RAID = L["Raid"],
   SMARTRAID = L["BG>Raid>Party>Say"],
-  RAID_WARNING = L["Raid Warning"],
+  RAID_WARNING = L["Raid Warning"], -- WOW CLASSIC: check this
   INSTANCE_CHAT = L["Instance"],
   COMBAT = L["Blizzard Combat Text"],
   PRINT = L["Chat Frame"]
@@ -2002,9 +2002,11 @@ for i=1,4 do
   WeakAuras.baseUnitId["partypet"..i] = true
 end
 
-for i=1,5 do
-  WeakAuras.baseUnitId["arena"..i] = true
-  WeakAuras.baseUnitId["boss"..i] = true
+if not WeakAuras.IsClassic then
+  for i=1,5 do
+    WeakAuras.baseUnitId["arena"..i] = true
+    WeakAuras.baseUnitId["boss"..i] = true
+  end
 end
 
 for i=1,40 do
@@ -2022,3 +2024,17 @@ WeakAuras.dbm_types = {
   [6] = L["Phase"],
   [7] = L["Important"]
 }
+
+if WeakAuras.IsClassic then
+  WeakAuras.baseUnitId.focus = nil
+  WeakAuras.baseUnitId.vehicle = nil
+  WeakAuras.unit_types.focus = nil
+  WeakAuras.unit_types_bufftrigger_2.focus = nil
+  WeakAuras.actual_unit_types_with_specific.focus = nil
+  WeakAuras.actual_unit_types_with_specific_and_multi.focus = nil
+  WeakAuras.actual_unit_types.focus = nil
+  WeakAuras.item_slot_types[0] = AMMOSLOT
+  WeakAuras.item_slot_types[16] = MAINHANDSLOT
+  WeakAuras.item_slot_types[17] = SECONDARYHANDSLOT
+  WeakAuras.item_slot_types[18] = RANGEDSLOT
+end
