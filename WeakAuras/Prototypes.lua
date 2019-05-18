@@ -1294,22 +1294,26 @@ WeakAuras.event_prototypes = {
       local result = {}
       AddUnitChangeEvents(trigger.unit, result)
       AddUnitEventForEvents(trigger.unit, result, "UNIT_HEALTH_FREQUENT")
-      if trigger.use_showAbsorb then
-        AddUnitEventForEvents(trigger.unit, result, "UNIT_ABSORB_AMOUNT_CHANGED")
-      end
-      if trigger.use_showIncomingHeal then
-        AddUnitEventForEvents(trigger.unit, result, "UNIT_HEAL_PREDICTION")
+      if not WeakAuras.IsClassic then
+        if trigger.use_showAbsorb then
+          AddUnitEventForEvents(trigger.unit, result, "UNIT_ABSORB_AMOUNT_CHANGED")
+        end
+        if trigger.use_showIncomingHeal then
+          AddUnitEventForEvents(trigger.unit, result, "UNIT_HEAL_PREDICTION")
+        end
       end
       return result
     end,
     unit_events = function(trigger)
       local result = {}
       AddUnitEventForUnit_events(trigger.unit, result, "UNIT_HEALTH_FREQUENT")
-      if trigger.use_showAbsorb then
-        AddUnitEventForUnit_events(trigger.unit, result, "UNIT_ABSORB_AMOUNT_CHANGED")
-      end
-      if trigger.use_showIncomingHeal then
-        AddUnitEventForUnit_events(trigger.unit, result, "UNIT_HEAL_PREDICTION")
+      if not WeakAuras.IsClassic then
+        if trigger.use_showAbsorb then
+          AddUnitEventForUnit_events(trigger.unit, result, "UNIT_ABSORB_AMOUNT_CHANGED")
+        end
+        if trigger.use_showIncomingHeal then
+          AddUnitEventForUnit_events(trigger.unit, result, "UNIT_HEAL_PREDICTION")
+        end
       end
       return result
     end,
@@ -1361,7 +1365,8 @@ WeakAuras.event_prototypes = {
         display = L["Show Absorb"],
         type = "toggle",
         test = "true",
-        reloadOptions = true
+        reloadOptions = true,
+        hidden = WeakAuras.IsClassic
       },
       {
         name = "absorbMode",
@@ -1370,32 +1375,36 @@ WeakAuras.event_prototypes = {
         test = "true",
         values = "absorb_modes",
         required = true,
-        enable = function(trigger) return trigger.use_showAbsorb end
+        enable = function(trigger) return trigger.use_showAbsorb end,
+        hidden = WeakAuras.IsClassic
       },
       {
         name = "showIncomingHeal",
         display = L["Show Incoming Heal"],
         type = "toggle",
         test = "true",
-        reloadOptions = true
+        reloadOptions = true,
+        hidden = WeakAuras.IsClassic
       },
       {
         name = "absorb",
         type = "number",
         display = L["Absorb"],
-        init = "UnitGetTotalAbsorbs(concernedUnit)",
+        init = "not WeakAuras.IsClassic and UnitGetTotalAbsorbs(concernedUnit)",
         store = true,
         conditionType = "number",
-        enable = function(trigger) return trigger.use_showAbsorb end
+        enable = function(trigger) return trigger.use_showAbsorb end,
+        hidden = WeakAuras.IsClassic
       },
       {
         name = "healprediction",
         type = "number",
         display = L["Incoming Heal"],
-        init = "UnitGetIncomingHeals(concernedUnit)",
+        init = "not WeakAuras.IsClassic and UnitGetIncomingHeals(concernedUnit)",
         store = true,
         conditionType = "number",
-        enable = function(trigger) return trigger.use_showIncomingHeal end
+        enable = function(trigger) return trigger.use_showIncomingHeal end,
+        hidden = WeakAuras.IsClassic
       },
       {
         hidden = true,
