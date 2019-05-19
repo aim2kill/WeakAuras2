@@ -4248,6 +4248,11 @@ function WeakAuras.CorrectSpellName(input)
     else
       return nil;
     end
+  elseif WeakAuras.IsClassic and input then
+    local name, _, _, _, _, _, spellId = GetSpellInfo(input)
+    if spellId then
+      return spellId
+    end
   elseif(input) then
     local link;
     if(input:sub(1,1) == "\124") then
@@ -4258,7 +4263,7 @@ function WeakAuras.CorrectSpellName(input)
     if(link) and link ~= "" then
       local itemId = link:match("spell:(%d+)");
       return tonumber(itemId);
-    elseif not WeakAuras.IsClassic then -- WOWCLASSIC TO FIX
+    elseif not WeakAuras.IsClassic then
       for tier = 1, MAX_TALENT_TIERS do
         for column = 1, NUM_TALENT_COLUMNS do
           local _, _, _, _, _, spellId = GetTalentInfo(tier, column, 1)
