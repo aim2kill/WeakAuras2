@@ -5176,8 +5176,8 @@ WeakAuras.event_prototypes = {
         hidden = WeakAuras.IsClassic
       },
       {
-        name = "strenght",
-        display = L["Strenght"],
+        name = "strength",
+        display = L["Strength"],
         type = "number",
         init = "UnitStat('player', LE_UNIT_STAT_STRENGTH)",
         store = WeakAuras.IsClassic,
