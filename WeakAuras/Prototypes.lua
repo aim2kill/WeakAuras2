@@ -4221,7 +4221,7 @@ WeakAuras.event_prototypes = {
       end
     end,
     iconFunc = function(trigger)
-      local icon = "Interface\\Icons\\Achievement_Character_Human_Male"
+      local icon = "Interface\\Icons\\Achievement_Character_Human_Male" -- WOW CLASSIC TOFIX: icon doesn't exists
       if WeakAuras.IsClassic then
         for i=1, GetNumShapeshiftForms() do
           local texture, isActive, isCastable = GetShapeshiftFormInfo(i);
@@ -4235,7 +4235,7 @@ WeakAuras.event_prototypes = {
           icon = GetShapeshiftFormInfo(form);
         end
       end
-      return icon or "Interface\\Icons\\Achievement_Character_Human_Male";
+      return icon or "Interface\\Icons\\Achievement_Character_Human_Male"; -- WOW CLASSIC TOFIX: icon doesn't exists
     end,
     automaticrequired = true
   },
