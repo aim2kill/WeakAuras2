@@ -1997,7 +1997,7 @@ WeakAuras.baseUnitId = {
   -- ["mouseover"] = true
 }
 
-for i=1,4 do
+for i = 1, 4 do
   WeakAuras.baseUnitId["party"..i] = true
   WeakAuras.baseUnitId["partypet"..i] = true
 end
@@ -2009,7 +2009,7 @@ if not WeakAuras.IsClassic then
   end
 end
 
-for i=1,40 do
+for i = 1, 40 do
   WeakAuras.baseUnitId["raid"..i] = true
   WeakAuras.baseUnitId["raidpet"..i] = true
   WeakAuras.baseUnitId["nameplate"..i] = true

@@ -773,7 +773,7 @@ end
 local genericTriggerRegisteredEvents = {};
 local genericTriggerRegisteredUnitEvents = {};
 local frame = CreateFrame("FRAME");
-frame.units = {};
+frame.unitFrames = {};
 WeakAuras.frames["WeakAuras Generic Trigger Frame"] = frame;
 frame:RegisterEvent("PLAYER_ENTERING_WORLD");
 genericTriggerRegisteredEvents["PLAYER_ENTERING_WORLD"] = true;
@@ -813,11 +813,7 @@ function LoadEvent(id, triggernum, data)
   if data.events then
     for index, event in pairs(data.events) do
       loaded_events[event] = loaded_events[event] or {};
-      if(event == "COMBAT_LOG_EVENT_UNFILTERED" and data.subevent) then
-        loaded_events[event][data.subevent] = loaded_events[event][data.subevent] or {};
-        loaded_events[event][data.subevent][id] = loaded_events[event][data.subevent][id] or {}
-        loaded_events[event][data.subevent][id][triggernum] = data;
-      elseif(event == "COMBAT_LOG_EVENT_UNFILTERED" and data.subevents) then
+      if(event == "COMBAT_LOG_EVENT_UNFILTERED" and data.subevents) then
         for i, subevent in pairs(data.subevents) do
           loaded_events[event][subevent] = loaded_events[event][subevent] or {};
           loaded_events[event][subevent][id] = loaded_events[event][subevent][id] or {}
@@ -865,16 +861,20 @@ function GenericTrigger.LoadDisplays(toLoad, loadEvent, ...)
     if(events[id]) then
       loaded_auras[id] = true;
       for triggernum, data in pairs(events[id]) do
-        for index, event in pairs(data.events) do
-          if (event == "COMBAT_LOG_EVENT_UNFILTERED_CUSTOM") then
-            eventsToRegister["COMBAT_LOG_EVENT_UNFILTERED"] = true;
-          elseif (event == "FRAME_UPDATE") then
-            register_for_frame_updates = true;
-          else
-            if (genericTriggerRegisteredEvents[event]) then
-              -- Already registered event
+        if data.events then
+          for index, event in pairs(data.events) do
+            if (event == "COMBAT_LOG_EVENT_UNFILTERED_CUSTOM") then
+              if not genericTriggerRegisteredEvents["COMBAT_LOG_EVENT_UNFILTERED"] then
+                eventsToRegister["COMBAT_LOG_EVENT_UNFILTERED"] = true;
+              end
+            elseif (event == "FRAME_UPDATE") then
+              register_for_frame_updates = true;
             else
-              eventsToRegister[event] = true;
+              if (genericTriggerRegisteredEvents[event]) then
+                -- Already registered event
+              else
+                eventsToRegister[event] = true;
+              end
             end
           end
         end
@@ -909,11 +909,11 @@ function GenericTrigger.LoadDisplays(toLoad, loadEvent, ...)
 
   for unit, events in pairs(unitEventsToRegister) do
     for event in pairs(events) do
-      if not frame.units[unit] then
-        frame.units[unit] = CreateFrame("FRAME")
-        frame.units[unit]:SetScript("OnEvent", HandleUnitEvent);
+      if not frame.unitFrames[unit] then
+        frame.unitFrames[unit] = CreateFrame("FRAME")
+        frame.unitFrames[unit]:SetScript("OnEvent", HandleUnitEvent);
       end
-      xpcall(frame.units[unit].RegisterUnitEvent, trueFunction, frame.units[unit], event, unit)
+      xpcall(frame.unitFrames[unit].RegisterUnitEvent, trueFunction, frame.unitFrames[unit], event, unit)
       genericTriggerRegisteredUnitEvents[unit] = genericTriggerRegisteredUnitEvents[unit] or {};
       genericTriggerRegisteredUnitEvents[unit][event] = true;
     end
@@ -923,6 +923,7 @@ function GenericTrigger.LoadDisplays(toLoad, loadEvent, ...)
     GenericTrigger.ScanWithFakeEvent(id);
   end
 
+  -- Replay events that lead to loading, if we weren't already registered for them
   if (eventsToRegister[loadEvent]) then
     WeakAuras.ScanEvents(loadEvent, ...);
   end
@@ -956,7 +957,7 @@ function GenericTrigger.Add(data, region)
         local trigger_events = {};
         local internal_events = {};
         local trigger_unit_events = {};
-        local trigger_subevents;
+        local trigger_subevents = {};
         local force_events = false;
         local durationFunc, overlayFuncs, nameFunc, iconFunc, textureFunc, stacksFunc, loadFunc;
         local tsuConditionVariables;
@@ -1046,18 +1047,17 @@ function GenericTrigger.Add(data, region)
 
             local prototype = event_prototypes[trigger.event];
             if(prototype) then
-              trigger_events = prototype.events;
+              local trigger_all_events = prototype.events;
               internal_events = prototype.internal_events;
               force_events = prototype.force_events;
               trigger_unit_events = prototype.unit_events;
-              if (type(trigger_events) == "function") then
-                trigger_events = trigger_events(trigger, untrigger);
+              if (type(trigger_all_events) == "function") then
+                trigger_all_events = trigger_all_events(trigger, untrigger);
               end
+              trigger_events = trigger_all_events.events
+              trigger_unit_events = trigger_all_events.unit_events
               if (type(internal_events) == "function") then
                 internal_events = internal_events(trigger, untrigger);
-              end
-              if (type(trigger_unit_events) == "function") then
-                trigger_unit_events = trigger_unit_events(trigger, untrigger);
               end
             end
           end
@@ -1102,12 +1102,13 @@ function GenericTrigger.Add(data, region)
           if((trigger.custom_type == "status" or trigger.custom_type == "stateupdate") and trigger.check == "update") then
             trigger_events = {"FRAME_UPDATE"};
           else
-            trigger_events = WeakAuras.split(trigger.events);
-            for index, event in pairs(trigger_events) do
+            local rawEvents = WeakAuras.split(trigger.events);
+            for index, event in pairs(rawEvents) do
               -- custom events in the form of event:unit1:unit2:unitX are registered with RegisterUnitEvent
               local trueEvent
               local hasParam = false
               local isCLEU = false
+              local isUnitEvent = false
               for i in event:gmatch("[^:]+") do
                 if not trueEvent then
                   trueEvent = string.upper(i)
@@ -1115,7 +1116,6 @@ function GenericTrigger.Add(data, region)
                 elseif isCLEU then
                   local subevent = string.upper(i)
                   if WeakAuras.IsCLEUSubevent(subevent) then
-                    trigger_subevents = trigger_subevents or {}
                     tinsert(trigger_subevents, subevent)
                     hasParam = true
                   end
@@ -1124,20 +1124,24 @@ function GenericTrigger.Add(data, region)
                   if WeakAuras.baseUnitId[unit] then
                     trigger_unit_events[unit] = trigger_unit_events[unit] or {}
                     tinsert(trigger_unit_events[unit], trueEvent)
-                    trigger_events[index] = nil
+                    isUnitEvent = true
                   end
                 end
               end
               if isCLEU then
                 if hasParam then
-                  trigger_events[index] = "COMBAT_LOG_EVENT_UNFILTERED"
+                  tinsert(trigger_events, "COMBAT_LOG_EVENT_UNFILTERED")
                 else
                   -- This is a dirty, lazy, dirty hack. "Proper" COMBAT_LOG_EVENT_UNFILTERED events are indexed by their sub-event types (e.g. SPELL_PERIODIC_DAMAGE),
                   -- but custom COMBAT_LOG_EVENT_UNFILTERED events are not guaranteed to have sub-event types. Thus, if the user specifies that they want to use
                   -- COMBAT_LOG_EVENT_UNFILTERED, this hack renames the event to COMBAT_LOG_EVENT_UNFILTERED_CUSTOM to circumvent the COMBAT_LOG_EVENT_UNFILTERED checks
                   -- that are already in place. Replacing all those checks would be a pain in the ass.
-                  trigger_events[index] = "COMBAT_LOG_EVENT_UNFILTERED_CUSTOM"
+                  tinsert(trigger_events, "COMBAT_LOG_EVENT_UNFILTERED_CUSTOM")
                 end
+              elseif isUnitEvent then
+                -- not added to trigger_events
+              else
+                tinsert(trigger_events, event)
               end
               force_events = trigger.custom_type == "status" or trigger.custom_type == "stateupdate";
             end
@@ -1163,6 +1167,10 @@ function GenericTrigger.Add(data, region)
           automaticAutoHide = true;
         end
 
+        if trigger.event == "Combat Log" and trigger.subeventPrefix and trigger.subeventSuffix then
+          tinsert(trigger_subevents, trigger.subeventPrefix .. trigger.subeventSuffix)
+        end
+
         events[id] = events[id] or {};
         events[id][triggernum] = {
           trigger = trigger,
@@ -1175,7 +1183,6 @@ function GenericTrigger.Add(data, region)
           force_events = force_events,
           unit_events = trigger_unit_events,
           inverse = trigger.use_inverse,
-          subevent = not trigger_subevents and trigger.event == "Combat Log" and trigger.subeventPrefix and trigger.subeventSuffix and (trigger.subeventPrefix..trigger.subeventSuffix);
           subevents = trigger_subevents,
           unevent = trigger.unevent,
           durationFunc = durationFunc,
