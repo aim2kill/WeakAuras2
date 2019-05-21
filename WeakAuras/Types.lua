@@ -2003,7 +2003,7 @@ for i = 1, 4 do
 end
 
 if not WeakAuras.IsClassic then
-  for i=1,5 do
+  for i = 1, 5 do
     WeakAuras.baseUnitId["arena"..i] = true
     WeakAuras.baseUnitId["boss"..i] = true
   end
